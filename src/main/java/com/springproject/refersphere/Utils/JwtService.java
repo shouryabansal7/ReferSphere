@@ -1,5 +1,6 @@
 package com.springproject.refersphere.Utils;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,7 +19,9 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "3ED6F18E41712DB5876284D2BCFBEFNJRNFJEJRJFJBBKBFVBJBSJBSHER734734YWHEHFHWEBFJBDCSBDBHEFS";
+    Dotenv dotenv = Dotenv.load();
+
+    private final String SECRET_KEY = dotenv.get("SECRET_KEY");
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllClaims(token);
