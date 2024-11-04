@@ -24,6 +24,9 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phoneNo(request.getPhoneNo())
+                .linkedIn(request.getLinkedIn())
+                .resume(request.getResume())
+                .skills(request.getSkills())
                 .role(request.getRole())
                 .build();
 

@@ -17,5 +17,8 @@ public class RegisterRequest {
     private String name;
     private String phoneNo;
     private String email;
+    private String linkedIn;
+    private String resume;
+    private String skills;
     private Role role;
 }
