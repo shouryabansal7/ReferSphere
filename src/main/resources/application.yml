@@ -4,14 +4,14 @@ server:
     include-binding-errors: always
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/mysql
+    url: jdbc:mysql://localhost:3306/refer_sphere
     username: root
     password: root@160
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
