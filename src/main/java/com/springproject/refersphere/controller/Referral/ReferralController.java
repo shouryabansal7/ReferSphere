@@ -44,4 +44,9 @@ public class ReferralController {
     public ResponseEntity<ReferralPost> referralById(@RequestParam(required = true)Long id) {
         return ResponseEntity.ok(referralService.findReferral(id));
     }
+
+    @PostMapping("/change")
+    public ResponseEntity<String> referralById(@RequestParam(required = true)Long id, @RequestParam(required = true)String status,@RequestParam Long candidateId) {
+        return ResponseEntity.ok(referralService.changeStatus(id,status,candidateId));
+    }
 }

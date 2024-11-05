@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static com.springproject.refersphere.model.Status.DONE;
+import static com.springproject.refersphere.model.Status.REQUIREMENTS_NOT_MET;
+
 @Service
 @RequiredArgsConstructor
 public class ReferralService {
@@ -28,7 +31,6 @@ public class ReferralService {
     private final ReferralRepository referralRepository;
     private final UserRepository userRepository;
     private final AppliedReferralRepository appliedReferralRepository;
-
 
     public void create(ReferralBody referralBody){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -166,5 +168,34 @@ public class ReferralService {
         referralPost.setStatus(appliedReferral.getStatus().toString());
 
         return referralPost;
+    }
+
+    public String changeStatus(Long id, String status,Long candidateId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (long) -1;
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                String username = ((UserDetails) principal).getUsername();
+                Optional<User> user = userRepository.findByUsername(username);
+                if (user.isPresent()) {
+                    userId = user.get().getId();
+                }
+            }
+        }
+        AppliedReferral application = appliedReferralRepository.findPost(candidateId,id);
+        Referral referral = referralRepository.getReferenceById(id);
+        if(!userId.equals(referral.getUserId())){
+            return "Not authorised to change the status of this Application";
+        }
+
+        if(status.equals(DONE.toString())){
+            application.setStatus(DONE);
+        }else if(status.equals(REQUIREMENTS_NOT_MET.toString())){
+            application.setStatus(REQUIREMENTS_NOT_MET);
+        }
+
+        appliedReferralRepository.updateStatus(application.getUserId(),status);
+        return "status of the application changed to "+status;
     }
 }
