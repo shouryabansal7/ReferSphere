@@ -1,12 +1,12 @@
 package com.springproject.refersphere.controller.Referral;
 
+import com.springproject.refersphere.Utils.AppliedReferralsToPost;
 import com.springproject.refersphere.Utils.ReferralBody;
 import com.springproject.refersphere.Utils.ReferralPost;
 import com.springproject.refersphere.Utils.ReferralResponse;
 import com.springproject.refersphere.model.Referral;
 import com.springproject.refersphere.service.ReferralService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,5 +48,10 @@ public class ReferralController {
     @PostMapping("/change")
     public ResponseEntity<String> referralById(@RequestParam(required = true)Long id, @RequestParam(required = true)String status,@RequestParam Long candidateId) {
         return ResponseEntity.ok(referralService.changeStatus(id,status,candidateId));
+    }
+
+    @GetMapping("/posts/user")
+    public ResponseEntity<List<AppliedReferralsToPost>> applicationsOnReferralPostByUser() {
+        return ResponseEntity.ok(referralService.applicationsOnReferralPostByUser());
     }
 }

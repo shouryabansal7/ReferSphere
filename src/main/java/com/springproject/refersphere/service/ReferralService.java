@@ -1,5 +1,6 @@
 package com.springproject.refersphere.service;
 
+import com.springproject.refersphere.Utils.AppliedReferralsToPost;
 import com.springproject.refersphere.Utils.ReferralBody;
 import com.springproject.refersphere.Utils.ReferralPost;
 import com.springproject.refersphere.Utils.ReferralResponse;
@@ -17,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -197,5 +197,48 @@ public class ReferralService {
 
         appliedReferralRepository.updateStatus(application.getUserId(),status);
         return "status of the application changed to "+status;
+    }
+
+    public List<AppliedReferralsToPost> applicationsOnReferralPostByUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (long) -1;
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                String username = ((UserDetails) principal).getUsername();
+                Optional<User> user = userRepository.findByUsername(username);
+                if (user.isPresent()) {
+                    userId = user.get().getId();
+                }
+            }
+        }
+
+        List<Referral> referrals = referralRepository.findAllApplicationsToPostsByUser(userId);
+        List<AppliedReferralsToPost> response = new ArrayList<>();
+        referrals.forEach(referral -> {
+            List<AppliedReferral> appliedReferrals = appliedReferralRepository.findAllAppliedPostsByPostId(referral.getId());
+            appliedReferrals.forEach(appliedReferral -> {
+                User user = userRepository.getReferenceById(appliedReferral.getUserId());
+                AppliedReferralsToPost appliedReferralsToPost = AppliedReferralsToPost
+                        .builder()
+                        .name(user.getName())
+                        .phoneNo(user.getPhoneNo())
+                        .email(user.getEmail())
+                        .linkedIn(user.getLinkedIn())
+                        .resume(user.getResume())
+                        .skills(user.getSkills())
+                        .position(referral.getPosition())
+                        .company(referral.getCompany())
+                        .experience(referral.getExperience())
+                        .jobDescription(referral.getJobDescription())
+                        .jobLink(referral.getJobLink())
+                        .status(appliedReferral.getStatus().toString())
+                        .build();
+
+                response.add(appliedReferralsToPost);
+            });
+        });
+
+        return response;
     }
 }
