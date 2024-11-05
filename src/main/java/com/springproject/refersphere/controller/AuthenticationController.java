@@ -30,4 +30,10 @@ public class AuthenticationController {
     ) {
         return ResponseEntity.ok(service.authenticate(request));
     }
+
+    @PostMapping("/logout")
+    public String logout() {
+        // Trigger logout logic (this will call the JwtLogoutHandler)
+        return "Logged out successfully";
+    }
 }
