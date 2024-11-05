@@ -1,6 +1,7 @@
 package com.springproject.refersphere.service;
 
 import com.springproject.refersphere.Utils.ReferralBody;
+import com.springproject.refersphere.Utils.ReferralPost;
 import com.springproject.refersphere.Utils.ReferralResponse;
 import com.springproject.refersphere.model.AppliedReferral;
 import com.springproject.refersphere.model.Referral;
@@ -97,7 +98,7 @@ public class ReferralService {
         return response;
     }
 
-    public void apply(Long id){
+    public String apply(Long id){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = (long) -1;
         if (authentication != null){
@@ -120,9 +121,50 @@ public class ReferralService {
                 .build();
 
         if(userId!=-1){
+            if(userId==referral.getUserId()){
+                return "Hello from secured endpoint, Referral cannot be applied for post id: "+id;
+            }
             application.setUserId(userId);
         }
         var appliedReferral = appliedReferralRepository.save(application);
-        return;
+        return "Hello from secured endpoint, Referral applied for post id: "+id;
+    }
+
+    public ReferralPost findReferral(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (long) -1;
+        if (authentication != null){
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                // If the principal is of type UserDetails, we can extract the username
+                String username = ((UserDetails) principal).getUsername();
+                Optional<User> user = userRepository.findByUsername(username);
+                if (user.isPresent()) {
+                    userId = user.get().getId();
+                }
+            }
+        }
+
+        Optional<Referral> referral = referralRepository.findById(id);
+        ReferralPost referralPost = ReferralPost
+                .builder()
+                .company(referral.get().getCompany())
+                .ctc(referral.get().getCtc())
+                .position(referral.get().getPosition())
+                .experience(referral.get().getExperience())
+                .jobDescription(referral.get().getJobDescription())
+                .jobLink(referral.get().getJobLink())
+                .build();
+
+        Boolean creator=false;
+        if(referral.get().getUserId().equals(userId)){
+            return referralPost;
+        }
+
+        AppliedReferral appliedReferral = appliedReferralRepository.findPost(userId,referral.get().getId());
+
+        referralPost.setStatus(appliedReferral.getStatus().toString());
+
+        return referralPost;
     }
 }

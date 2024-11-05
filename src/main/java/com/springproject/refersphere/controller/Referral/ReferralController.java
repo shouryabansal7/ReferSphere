@@ -1,6 +1,7 @@
 package com.springproject.refersphere.controller.Referral;
 
 import com.springproject.refersphere.Utils.ReferralBody;
+import com.springproject.refersphere.Utils.ReferralPost;
 import com.springproject.refersphere.Utils.ReferralResponse;
 import com.springproject.refersphere.model.Referral;
 import com.springproject.refersphere.service.ReferralService;
@@ -31,12 +32,16 @@ public class ReferralController {
 
     @PostMapping("/apply")
     public ResponseEntity<String> appleReferral(@RequestParam(required = true)Long id) {
-        referralService.apply(id);
-        return ResponseEntity.ok("Hello from secured endpoint, Referral applied for post id: "+id);
+        return ResponseEntity.ok(referralService.apply(id));
     }
 
     @GetMapping("/applied")
     public ResponseEntity<List<ReferralResponse>> appliedReferrals() {
         return ResponseEntity.ok(referralService.findApplied());
+    }
+
+    @GetMapping("/post")
+    public ResponseEntity<ReferralPost> referralById(@RequestParam(required = true)Long id) {
+        return ResponseEntity.ok(referralService.findReferral(id));
     }
 }

@@ -13,4 +13,7 @@ public interface AppliedReferralRepository extends JpaRepository<AppliedReferral
     @Query(value = "SELECT * FROM applications WHERE user_id = :user_id",nativeQuery = true)
     List<AppliedReferral> findAllAppliedPostsByUserId(@Param("user_id") Long user_id);
 
+    @Query(value = "SELECT * FROM applications WHERE user_id = :user_id AND post_id = :post_id",nativeQuery = true)
+    AppliedReferral findPost(@Param("user_id") Long user_id,@Param("post_id") Long post_id);
+
 }
