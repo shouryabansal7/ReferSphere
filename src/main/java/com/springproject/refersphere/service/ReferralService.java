@@ -1,8 +1,12 @@
 package com.springproject.refersphere.service;
 
 import com.springproject.refersphere.Utils.ReferralBody;
+import com.springproject.refersphere.Utils.ReferralResponse;
+import com.springproject.refersphere.model.AppliedReferral;
 import com.springproject.refersphere.model.Referral;
+import com.springproject.refersphere.model.Status;
 import com.springproject.refersphere.model.User;
+import com.springproject.refersphere.repository.AppliedReferralRepository;
 import com.springproject.refersphere.repository.ReferralRepository;
 import com.springproject.refersphere.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +26,7 @@ public class ReferralService {
 
     private final ReferralRepository referralRepository;
     private final UserRepository userRepository;
+    private final AppliedReferralRepository appliedReferralRepository;
 
 
     public void create(ReferralBody referralBody){
@@ -56,5 +62,67 @@ public class ReferralService {
 
     public List<Referral> findAll() {
         return referralRepository.findAll();
+    }
+
+    public List<ReferralResponse> findApplied(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (long) -1;
+        if (authentication != null){
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                // If the principal is of type UserDetails, we can extract the username
+                String username = ((UserDetails) principal).getUsername();
+                Optional<User> user = userRepository.findByUsername(username);
+                if (user.isPresent()) {
+                    userId = user.get().getId();
+                }
+            }
+        }
+        List<AppliedReferral> appliedReferrals = appliedReferralRepository.findAllAppliedPostsByUserId(userId);
+        List<ReferralResponse> response = new ArrayList<>();
+        appliedReferrals.forEach(appliedReferral -> {
+            Optional<Referral> referral = referralRepository.findById(appliedReferral.getReferralId());
+            ReferralResponse referralResponse = ReferralResponse
+                    .builder()
+                    .status(appliedReferral.getStatus())
+                    .company(appliedReferral.getCompany())
+                    .ctc(referral.get().getCtc())
+                    .position(appliedReferral.getPosition())
+                    .experience(referral.get().getExperience())
+                    .jobDescription(referral.get().getJobDescription())
+                    .jobLink(referral.get().getJobLink())
+                    .build();
+            response.add(referralResponse);
+        });
+        return response;
+    }
+
+    public void apply(Long id){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (long) -1;
+        if (authentication != null){
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                // If the principal is of type UserDetails, we can extract the username
+                String username = ((UserDetails) principal).getUsername();
+                Optional<User> user = userRepository.findByUsername(username);
+                if (user.isPresent()) {
+                    userId = user.get().getId();
+                }
+            }
+        }
+        Referral referral = referralRepository.getReferenceById(id);
+        var application = AppliedReferral.builder()
+                .company(referral.getCompany())
+                .position(referral.getPosition())
+                .referralId(referral.getId())
+                .status(Status.IN_PROGRESS)
+                .build();
+
+        if(userId!=-1){
+            application.setUserId(userId);
+        }
+        var appliedReferral = appliedReferralRepository.save(application);
+        return;
     }
 }
